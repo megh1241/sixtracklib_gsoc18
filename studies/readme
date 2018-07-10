@@ -8,3 +8,4 @@ study6: simple pyopencl example
 study7: (in progress) example differential algebra
 study8: (proposed) example use of external sixtracklib
 study9: alignment not respected on the stack
+study10: C example for embedding in Python
