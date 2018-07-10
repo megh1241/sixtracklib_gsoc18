@@ -8,7 +8,7 @@ This is one quick & dirty way to use the upstream sixtracklib repository for a s
 * Cuda 7.5 or higher
 * Optionally: Other dependencies for building the submodules of sixtracklib (googletest, OpenCL, etc.) -> not needed in this minimal environment
 
-## Preparation: Installing sixtracklib into the external subfolder of study8
+## Preparation: Installing sixtracklib into the external subfolder of study10
 **Assumptions**:
 * this document is located under ${STUDY10_DIR} 
 * Upstream sixtracklib will be cloned into ${HOME}/git/sixtracklib
