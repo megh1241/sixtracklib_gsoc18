@@ -28,7 +28,12 @@ static const char source[] =
     "    if (i < n) {\n"
     "       c[i] = a[i] + b[i];\n"
     "    }\n"
-    "}\n";
+    "}\n"
+    "kernel void null(\n"
+    "       )\n"
+    "{\n"
+    "}\n"
+    ;
 
 
 int mk_test(std::vector<cl::Device> devices, int ndev,  cl::Context context) {
@@ -53,6 +58,7 @@ int mk_test(std::vector<cl::Device> devices, int ndev,  cl::Context context) {
         }
 
         cl::Kernel add(program, "add");
+        cl::Kernel null(program, "null");
         size_t N = 1 << 20;
 
         // Prepare input data.
@@ -83,7 +89,19 @@ int mk_test(std::vector<cl::Device> devices, int ndev,  cl::Context context) {
         add.setArg(3, C);
 
         // Launch kernel on the compute device.
-        queue.enqueueNDRangeKernel(add, cl::NullRange, N, cl::NullRange);
+//        cl::Event event_remap;  //Event does not solve the issue
+        queue.enqueueNDRangeKernel(
+                add, cl::NullRange,
+                N, cl::NullRange);
+        queue.enqueueNDRangeKernel(
+                null, cl::NullRange,
+                1, cl::NullRange); // null kernel seems to solve the issue
+//        queue.enqueueNDRangeKernel(
+//                add, cl::NullRange,
+//                N, cl::NullRange, nullptr, &event_remap);
+
+//        queue.flush();
+//        event_remap.wait();
 
         // Get result back to host.
         queue.enqueueReadBuffer(C, CL_TRUE, 0, c.size() * sizeof(double), c.data());
