@@ -3,10 +3,16 @@
 #define NUM_OF_BLOCKS 32
 #define THREADS_PER_BLOCK 32
 
-extern void run(double **indata, double **outdata, int npart );
+extern void runtest(double **indata, double **outdata, int npart );
 
-void run(double **indata, double **outdata, int npart){
+void runtest(double **indata, double **outdata, int npart){
 
+    printf("Before\n");
+    for(int ipart=0; ipart<10; ipart++){
+	  printf("particle x; %lf\n",  indata[0][ipart]);
+	  printf("particle xp; %lf\n",  indata[1][ipart]);
+    }
+    // end fill particles
     // make particles
     int initial_particles_capacity = npart*8*30;
     int initial_particles_blocks   = 1;
@@ -16,12 +22,10 @@ void run(double **indata, double **outdata, int npart){
     st_Particles* particles = st_Blocks_add_particles( particles_buffer, npart );
 
     // fill particles
-    for (int ipart=0; ipart<npart; npart++){
-      particles->x[ipart]  =indata[0][ipart];
-      particles->px[ipart] =indata[1][ipart];
-      //particles->rvv[ipart] =
+    for (int ipart=0; ipart<npart; ipart++){
+      particles->x[ipart]  = indata[0][ipart];
+      particles->px[ipart] = indata[1][ipart];
     };
-    // end fill particles
 
     // make lattice
     // allocate lattice data
@@ -32,13 +36,9 @@ void run(double **indata, double **outdata, int npart){
     // end allocate lattice data
 
     //Drift
-    st_Blocks_add_drift( beam_elements, 1.0 );
-    //Thin Quad k1= 1e-3
-    st_Blocks_add_multipole( beam_elements, 0,0,0,1, (double[]){0,0,1e-3,0} );
-    st_Blocks_add_drift( beam_elements, 1.0 );
-    st_Blocks_add_multipole( beam_elements, 0,0,0,1, (double[]){0,0,-1e-3,0} );
+    st_Drift* drift = st_Blocks_add_drift( beam_elements, 4.0 );
+    printf( "drift= %.16f\r\n", drift->length );
 
-    //Freeze data for tracking (will not needed in the future)
     st_Blocks_serialize( particles_buffer );
     st_Blocks_serialize( beam_elements );
 
@@ -46,12 +46,20 @@ void run(double **indata, double **outdata, int npart){
     st_Track_particles_on_cuda( NUM_OF_BLOCKS, THREADS_PER_BLOCK, num_turns,
             particles_buffer, beam_elements, 0 );
 
+    printf("After\n");
+    double* out_x = NS(Particles_get_x)(particles);
+    double* out_px = NS(Particles_get_px)(particles);
+    for(int i=0; i<10; i++)
+    {
+	    printf("%lf\n", out_x[i]);
+	    printf("%lf\n", out_px[i]);
+    }
+
+
     // export data
     // fill particles
-    for (int ipart=0; ipart<npart; npart++){
-      outdata[0][ipart] =  particles->x[ipart];
-      outdata[1][ipart] =  particles->px[ipart];
-      //particles->rvv[ipart] =
+    for (int i=0; i<10; i++){
+	    num_turns++;
     };
     // end fill particles
 
@@ -67,11 +75,6 @@ void run(double **indata, double **outdata, int npart){
 }
 
 /* end: studies/study10/sample_fodo.c */
-
-
-
-
-
 
 
 
